@@ -1,0 +1,34 @@
+---
+- name: Copy static Jenkins configuration files
+  copy:
+    src: "{{ playbook_dir }}/jenkins/files/{{ jenkins_config_item }}"
+    dest: "{{ playbook_dir }}/jenkins/conf/{{ jenkins_config_item }}"
+  with_items:
+  - executors.groovy
+  - plugins.txt
+  loop_control:
+    loop_var: jenkins_config_item
+
+- name: Build Jenkins security file
+  template:
+    src: "{{ playbook_dir }}/jenkins/templates/security.groovy.j2"
+    dest: "{{ playbook_dir }}/jenkins/conf/security.groovy"
+  tags:
+  - build_jenkins
+
+- name: Build Jenkins location model
+  template:
+    src: "{{ playbook_dir }}/jenkins/templates/jenkins.model.JenkinsLocationConfiguration.xml.j2"
+    dest: "{{ playbook_dir }}/jenkins/conf/jenkins.model.JenkinsLocationConfiguration.xml"
+  tags:
+  - build_jenkins
+
+- name: Build Jenkins container
+  docker_image:
+    path: "{{ playbook_dir }}/jenkins"
+    force: yes
+    debug: yes
+    name: forge/jenkins
+    state: present
+  tags:
+  - build_jenkins

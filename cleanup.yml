@@ -1,0 +1,23 @@
+---
+- name: Cleanup forge volumes
+  hosts: localhost
+  vars:
+    ansible_python_interpreter: python3
+    docker_host: "{{ lookup('env', 'DOCKER_HOST')|urlsplit('hostname') }}"
+    project_name: forge
+  vars_files:
+  - docker-compose.yml
+  tasks:
+  - name: Remove containers and volumes
+    docker_service:
+      state: absent
+      remove_volumes: yes
+      files:
+      - docker-compose.yml
+      project_src: "{{ playbook_dir }}"
+      project_name: "{{ project_name }}"
+  - name: Remove volumes
+    docker_volume:
+      name: "{{ project_name }}_{{ item }}"
+      state: absent
+    with_items: "{{ services.keys()|list }}"

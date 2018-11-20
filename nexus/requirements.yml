@@ -1,0 +1,5 @@
+---
+- src: https://github.com/rastaman/ansible-nexus3-oss.git
+  version: without_systemd_for_docker
+  name: savoirfairelinux.nexus3-oss
+- src: ansiblebit.oracle-java

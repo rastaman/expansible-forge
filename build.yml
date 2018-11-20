@@ -1,0 +1,25 @@
+---
+- name: Refresh service
+  hosts: localhost
+  vars_files:
+  - docker-compose.yml
+  - settings.yml
+  vars:
+    service: set_it_at_command_line
+    erase_volume: false
+  tasks:
+  - name: "{{ service }}: Build container"
+    include_tasks: "{{ playbook_dir }}/{{ service }}/{{ service }}.yml"
+    tags:
+    - "{{ 'build_' + service }}"
+  - name: "{{ service }}: Stop"
+    command: "docker-compose stop {{ service }}"
+  - name: "{{ service }}: Remove"
+    command: "docker-compose rm -f {{ service }}"
+  - name: "{{ service }}: Remove volume"
+    docker_volume:
+      name: "{{ project_name }}_{{ service }}"
+      state: absent
+    when: erase_volume
+  - name: "{{ service }}: Launch container"
+    command: "docker-compose up -d {{ service }}"

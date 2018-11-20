@@ -1,0 +1,28 @@
+---
+- name: Setup Jenkins
+  hosts: localhost
+  vars_files:
+  - ../docker-compose.yml
+  vars:
+    ansible_python_interpreter: python3
+    docker_host: "{{ lookup('env', 'DOCKER_HOST')|urlsplit('hostname') }}"
+    services_names: "{{ services.keys()|list }}"
+    container_name: forge_jenkins_1
+  tasks:
+  - name: Prepare work folder
+    file:
+      name: "{{ playbook_dir }}/work"
+      state: directory
+  - name: Get the admin password
+    command: "docker exec -t {{ container_name }} cat /var/jenkins_home/secrets/initialAdminPassword"
+    register: jenkins_password
+  - name: Debug password
+    debug:
+      msg: "{{ jenkins_password.stdout_lines[0] }}"
+  - name: Access Jenkins
+    get_url:
+      url: "http://{{ docker_host }}/jenkins/"
+      url_password: "{{ jenkins_password.stdout_lines[0]|trim }}"
+      url_username: admin
+      force_basic_auth: yes
+      dest: "{{ playbook_dir }}/work/jenkins_index.html"

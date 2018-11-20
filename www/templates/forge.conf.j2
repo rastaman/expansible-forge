@@ -1,0 +1,106 @@
+# Nginx configuration
+server {
+    listen       80;
+    server_name  192.168.0.14;
+
+    #charset koi8-r;
+    #access_log  /var/log/nginx/host.access.log  main;
+
+    location / {
+        root   /usr/share/nginx/html;
+        index  index.html index.htm;
+    }
+
+    error_page   500 502 503 504  /50x.html;
+    location = /50x.html {
+        root   /usr/share/nginx/html;
+    }
+
+    location /jenkins/administrativeMonitor/hudson.diagnosis.ReverseProxySetupMonitor/testForReverseProxySetup/ {
+        rewrite ^ $request_uri;
+        rewrite ^/jenkins/administrativeMonitor/hudson.diagnosis.ReverseProxySetupMonitor/testForReverseProxySetup/(.*) $1 break;
+        return 400;
+        proxy_pass http://jenkins:8080/$uri;
+    }
+
+    location /synchrony-proxy {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://confluence:8090/synchrony-proxy;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+
+    location /confluence/synchrony-proxy {
+        proxy_set_header X-Forwarded-Host $host;
+        proxy_set_header X-Forwarded-Server $host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_pass http://confluence:8090/synchrony-proxy;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection "Upgrade";
+    }
+
+{% for key, value in services.items() %}
+{% if key != 'www' %}
+{% set external_port,internal_port = value.ports[0].split(':') %}
+    location ^~ /{{ key }} {
+ 
+        proxy_pass  http://{{ key }}:{{ internal_port }}/{{ key }};
+        proxy_redirect  http://{{ key }}:{{ internal_port }}/{{ key }}/ http://{{ docker_host }}/{{ key }}/;
+        #proxy_redirect        off;
+        proxy_set_header      Host $host:$server_port;
+        #proxy_set_header      Host $host;
+        proxy_set_header      X-Real-IP $remote_addr;
+        #proxy_set_header      X-Forwarded-For $proxy_add_x_forwarded_for;
+        #proxy_set_header      X-Forwarded-Host $server_name;
+        #proxy_set_header      X-Forwarded-Proto $scheme;
+
+        #proxy_set_header  X-Real-IP         $remote_addr;
+        #proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
+        #proxy_set_header   X-Forwarded-Server $host;
+        #proxy_set_header   X-Forwarded-Port   $server_port;
+        #add_header  Host               $host:$server_port always;
+        #add_header  X-Forwarded-Host   $host:$server_port always;
+        #add_header  X-Forwarded-Proto  $scheme always;
+        #add_header  toto               'toto' always;
+        #proxy_set_header  X-Forwarded-For   $proxy_add_x_forwarded_for;
+        #sub_filter  '{{ docker_host }}' 'jenkins:8080';
+        #sub_filter_once off;
+
+        #proxy_bind        $server_addr;
+
+        sendfile off;
+
+        #access_log  /var/log/nginx/{{ key }}.log  main;
+
+        #set $ref $http_referer;
+        #if ($ref ~* '^http?://{{ docker_host }}(/.*)$') {
+        #    set $ref http://{{ key }}:{{ internal_port }}$1;
+        #}
+        #proxy_set_header Referer $ref;
+
+        proxy_max_temp_file_size 0;
+ 
+        #this is the maximum upload size
+        client_max_body_size       10m;
+        client_body_buffer_size    128k;
+ 
+        proxy_connect_timeout      90;
+        proxy_send_timeout         90;
+        proxy_read_timeout         90;
+ 
+        proxy_temp_file_write_size 64k;
+  
+        # Required for new HTTP-based CLI
+        proxy_http_version 1.1;
+        proxy_request_buffering off;
+        proxy_buffering off; # Required for HTTP-based CLI to work over SSL
+    }
+
+{% endif %}
+{% endfor %}
+
+}

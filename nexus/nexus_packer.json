@@ -1,0 +1,37 @@
+{
+    "builders": [
+        {
+            "type": "docker",
+            "image": "forge/centos7_java8:latest",
+            "commit": true,
+            "pull": false,
+            "privileged": true,
+            "changes": [
+                "VOLUME /var/nexus",
+                "EXPOSE 8081 9080 9081 9082 9083",
+                "CMD [\"sh\", \"-c\", \"/opt/nexus-latest/bin/nexus run\"]"
+            ]
+        }
+    ],
+
+    "provisioners": [
+        {
+            "type": "shell",
+            "inline": [
+                "yum install -y cronie",
+                "crond"
+            ]
+        },
+        {
+            "type": "ansible",
+            "user": "root",
+            "playbook_file": "nexus.yml"
+        }
+    ],
+
+    "post-processors": [[ {
+        "type": "docker-tag",
+        "repository": "forge/nexus",
+        "tag": "latest"
+    } ]]
+}

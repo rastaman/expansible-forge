@@ -1,0 +1,27 @@
+---
+# $ PIP_REQUIRE_VIRTUALENV=false pip3 install docker-compose
+# $ ansible-playbook forge.yml
+- name: Deploy a docker-compose setup
+  hosts: localhost
+
+  vars_files:
+  - docker-compose.yml
+  - settings.yml
+
+  vars:
+    services_names: "{{ services.keys()|list }}"
+
+  tasks:
+  - name: Pull images
+    docker_image:
+      name: "{{ item.value.image }}"
+      state: present
+    with_dict: "{{ services }}"
+
+  - name: Deploy containers
+    docker_service:
+      files:
+      - docker-compose.yml
+      project_src: "{{ playbook_dir }}"
+      project_name: "{{ project_name }}"
+      state: present

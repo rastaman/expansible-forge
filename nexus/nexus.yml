@@ -1,0 +1,104 @@
+---
+- name: Install Nexus
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  vars_files:
+  - "{{ playbook_dir }}/../docker-compose.yml"
+  - "{{ playbook_dir }}/../settings.yml"
+  vars:
+    #ansible_python_interpreter: python
+    nexus_version: '3.14.0-04'
+    nexus_timezone: 'Europe/Paris'
+    nexus_default_port: 8081
+    nexus_default_context_path: '/nexus/'
+    nexus_admin_password: "{{ nexus.admin.password }}"
+    nexus_anonymous_access: false  
+    #httpd_server_name: 'nexus.vm'
+    httpd_setup_enable: false
+    public_hostname: "{{ docker_host }}"
+    #httpd_ssl_certificate_file: "{{ vault_httpd_ssl_certificate_file }}"
+    #httpd_ssl_certificate_key_file: "{{ vault_httpd_ssl_certificate_key_file }}"
+    # ldap_connections:
+    #   - ldap_name: '{{ project_name }} LDAP'
+    #     ldap_protocol: 'ldaps'
+    #     ldap_hostname: 'ldap.{{ project_name }}.com'
+    #     ldap_port: 636
+    #     ldap_search_base: 'dc={{ project_name }},dc=net'
+    #     ldap_user_base_dn: 'ou=users'
+    #     ldap_user_object_class: 'inetOrgPerson'
+    #     ldap_user_id_attribute: 'uid'
+    #     ldap_user_real_name_attribute: 'cn'
+    #     ldap_user_email_attribute: 'mail'
+    #     ldap_group_base_dn: 'ou=groups'
+    #     ldap_group_object_class: 'posixGroup'
+    #     ldap_group_id_attribute: 'cn'
+    #     ldap_group_member_attribute: 'memberUid'
+    #     ldap_group_member_format: '${username}'
+    nexus_privileges:
+      - name: all-repos-read
+        description: 'Read & Browse access to all repos'
+        repository: '*'
+        actions:
+          - read
+          - browse
+      - name: "{{ project_name }}-project-deploy"
+        description: "Deployments to {{ project_name }}-project"
+        repository: "{{ project_name }}-project"
+        actions:
+          - add
+          - edit
+    nexus_roles:
+      - id: Developpers # maps to the LDAP group
+        name: developers
+        description: All developers
+        privileges:
+          - nx-search-read
+          - all-repos-read
+          - "{{ project_name }}-project-deploy"
+        roles: []
+    nexus_local_users:
+      - username: "{{ jenkins.nexus.username }}" # used as key to update
+        first_name: Jenkins
+        last_name: CI
+        email: "{{ jenkins.nexus.email }}"
+        password: "{{ jenkins.nexus.password }}"
+        roles:
+          - Developpers # role ID here
+    nexus_blobstores:
+      - name: "{{ project_name }}-artifacts"
+        path: "/var/nexus/blobs/{{ project_name }}-artifacts"
+    nexus_scheduled_tasks:
+      - name: compact-blobstore
+        cron: '0 0 22 * * ?'
+        typeId: blobstore.compact
+        taskProperties:
+          blobstoreName: "{{ project_name }}-artifacts"
+    nexus_repos_maven_proxy:
+      - name: central
+        remote_url: 'https://repo1.maven.org/maven2/'
+        layout_policy: permissive
+      - name: jboss
+        remote_url: 'https://repository.jboss.org/nexus/content/groups/public-jboss/'
+    nexus_repos_maven_hosted:
+      - name: "{{ project_name }}-project"
+        version_policy: mixed
+        write_policy: allow
+        blob_store: "{{ project_name }}-artifacts"
+    nexus_repos_maven_group:
+      - name: public
+        member_repos:
+          - central
+          - jboss
+    nexus_config_pypi: true
+    nexus_config_docker: true
+    nexus_config_npm: true
+    nexus_config_raw: true
+    nexus_systemd_enable: false
+
+  roles:
+    - role: savoirfairelinux.nexus3-oss
+      tags:
+        - build_nexus
+

@@ -1,0 +1,18 @@
+---
+# Muse use python3 for the docker-compose library to work
+#ansible_python_interpreter: python3
+docker_host: "{{ lookup('env', 'DOCKER_HOST')|urlsplit('hostname') }}"
+project_name: forge
+jenkins:
+  admin:
+    username: "{{ lookup('env', 'FORGE_ADMIN_LOGIN') }}"
+    password: "{{ lookup('env', 'FORGE_ADMIN_PASSWORD') }}"
+    email: "{{ lookup('env', 'FORGE_ADMIN_EMAIL') }}"
+  nexus:
+    username: "{{ lookup('env', 'NEXUS_JENKINS_LOGIN') }}"
+    password: "{{ lookup('env', 'NEXUS_JENKINS_PASSWORD') }}"
+    email: "{{ lookup('env', 'NEXUS_JENKINS_EMAIL') }}"
+nexus:
+  admin:
+    username: "{{ lookup('env', 'NEXUS_ADMIN_LOGIN') }}"
+    password: "{{ lookup('env', 'NEXUS_ADMIN_PASSWORD') }}"

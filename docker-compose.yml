@@ -1,0 +1,59 @@
+version: '3'
+services:
+  bitbucket:
+    image: forge/bitbucket:latest
+    ports:
+      - "7990:7990"
+      - "7999:7999"
+    volumes:
+      - "bitbucket:/var/atlassian/application-data/bitbucket"
+  confluence:
+    image: atlassian/confluence-server:6.9.0
+    environment:
+      CATALINA_CONTEXT_PATH: /confluence
+    ports:
+      - "8090:8090"
+      - "8091:8091"
+    volumes:
+      - "confluence:/var/atlassian/application-data/confluence"
+  jira:
+    image: cptactionhank/atlassian-jira-software:7.9.2
+    environment:
+      X_PATH: /jira
+    ports:
+      - "6080:8080"
+    volumes:
+      - "jira:/var/atlassian/jira"
+  nexus:
+    image: forge/nexus:latest
+    ports:
+      - "8081:8081"
+      - "9080:9080"
+      - "9081:9081"
+      - "9082:9082"
+      - "9083:9083"
+    volumes:
+      - "nexus:/var/nexus"
+  jenkins:
+    image: forge/jenkins:latest
+    environment:
+      JENKINS_OPTS: "--prefix=/jenkins"
+      JAVA_OPTS: "-Djava.awt.headless=true -Djenkins.install.runSetupWizard=false -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+      #JAVA_OPTS: "-Djava.awt.headless=true -Xdebug -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=5005"
+    ports:
+      - "8080:8080"
+      - "50000:50000"
+      - "5005:5005"
+    volumes:
+      - "jenkins:/var/jenkins_home"
+  www:
+    image: forge/www:latest
+    ports:
+      - "80:80"
+
+volumes:
+  jenkins:
+  jira:
+  bitbucket:
+  confluence:
+  nexus:

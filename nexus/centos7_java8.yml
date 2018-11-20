@@ -1,0 +1,20 @@
+---
+- name: Install Java
+  hosts: all
+  gather_facts: yes
+  become: yes
+
+  roles:
+    - role: ansiblebit.oracle-java
+      oracle_java_use_defaults: no
+      oracle_java_dir_source: '/usr/local/src'
+      oracle_java_download_timeout: 60
+      oracle_java_rpm_filename: 'jdk-8u191-linux-x64.rpm'
+      oracle_java_home: '/usr/java/default'
+      oracle_java_os_supported: yes
+      oracle_java_rpm_url: 'http://download.oracle.com/otn-pub/java/jdk/8u191-b12/2787e4a523244c269598db4e85c51e0c/jdk-8u191-linux-x64.rpm'
+      oracle_java_rpm_validate_certs: yes
+      oracle_java_set_as_default: yes
+      oracle_java_version_string: 1.8.0_191
+      tags:
+        - build_centos7_java8      

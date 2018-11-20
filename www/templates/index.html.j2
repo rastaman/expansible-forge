@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Forge</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+</head>
+<body>
+<ul>
+{% for key, value in services.items() %}
+{% if key != 'www' %}
+{% set external_port,internal_port = value.ports[0].split(':') %}
+    <li><a href="/{{ key }}/">{{ key|capitalize }}</a> or <a href="http://{{ docker_host }}:{{ external_port }}/{{ key }}">Direct access to {{ key|capitalize }}</a></li>
+{% endif %}
+{% endfor %}
+</ul>
+</body>
+</html>

@@ -1,0 +1,10 @@
+---
+- name: Build Bitbucket container
+  docker_image:
+    path: "{{ playbook_dir }}/bitbucket"
+    force: yes
+    debug: yes
+    name: forge/bitbucket
+    state: present
+  tags:
+  - build_bitbucket

@@ -1,0 +1,24 @@
+---
+- name: Build configuration
+  template:
+    src: "{{ playbook_dir }}/www/templates/forge.conf.j2"
+    dest: "{{ playbook_dir }}/www/conf/conf.d/default.conf"
+  tags:
+  - build_www
+
+- name: Build welcome page
+  template:
+    src: "{{ playbook_dir }}/www/templates/index.html.j2"
+    dest: "{{ playbook_dir }}/www/static/index.html"
+  tags:
+  - build_www
+
+- name: Build proxy container
+  docker_image:
+    path: "{{ playbook_dir }}/www"
+    force: yes
+    debug: yes
+    name: "forge/www"
+    state: present
+  tags:
+  - build_www

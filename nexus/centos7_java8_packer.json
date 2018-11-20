@@ -1,0 +1,22 @@
+{
+    "builders": [
+        {
+            "type": "docker",
+            "image": "centos",
+            "commit": true,
+            "privileged": true
+        }
+    ],
+
+    "provisioners": [{
+        "type": "ansible",
+        "user": "root",
+        "playbook_file": "centos7_java8.yml"
+    }],
+
+    "post-processors": [[ {
+        "type": "docker-tag",
+        "repository": "forge/centos7_java8",
+        "tag": "latest"
+    } ]]
+}

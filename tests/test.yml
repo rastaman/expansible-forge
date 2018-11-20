@@ -1,0 +1,27 @@
+---
+- name: Access the components of the software forge
+  hosts: localhost
+  vars_files:
+  - ../docker-compose.yml
+  vars:
+    # Must use python3 for the docker-compose library to work
+    ansible_python_interpreter: python3
+    docker_host: "{{ lookup('env', 'DOCKER_HOST')|urlsplit('hostname') }}"
+    services_names: "{{ services.keys()|list }}"
+  tasks:
+  - name: Prepare work folder
+    file:
+      name: "{{ playbook_dir }}/work"
+      state: directory  
+  - name: Get proxied pages
+    get_url:
+      url: http://{{ docker_host }}/{{ item }}/
+      dest: "{{ playbook_dir }}/work/{{ item }}.html"
+    with_items: "{{ services_names }}"
+    register: pages
+    ignore_errors: yes
+    when: item != 'www'
+  - name: Save proxied pages
+    copy:
+      content: "{{ pages|to_nice_json }}"
+      dest: "{{ playbook_dir }}/work/proxied_pages.json"
