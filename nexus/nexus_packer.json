@@ -25,7 +25,7 @@
         {
             "type": "ansible",
             "user": "root",
-            "playbook_file": "nexus.yml"
+            "playbook_file": "nexus_packer.yml"
         }
     ],
 

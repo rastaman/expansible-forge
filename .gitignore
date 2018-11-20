@@ -1,2 +1,5 @@
 tests/work
 setenv.sh
+setenv.*.sh
+**/roles/*/
+NOTES.md
