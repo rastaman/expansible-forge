@@ -5,9 +5,10 @@ A software forge in Docker with the following components:
 - JIRA
 - Confluence
 - Bitbucket
-- Crowd
 - Nexus
 - Jenkins
+
+There is no db support right now.
 
 ## Configuration
 
@@ -37,3 +38,14 @@ everything should start again.
 Go to `http://${docker_host_ip}/` to access the forge and the various services.
 
 There is manual configuration to do in most of the services, especially Atlassian ones, but it should work.
+
+## Roadmap
+
+Further automate the Atlassian products installation.
+
+## References
+
+### JIRA Automated installation
+
+- [Fully automated installation/configuration of JIRA](https://community.atlassian.com/t5/Jira-questions/Fully-automated-installation-configuration-of-JIRA/qaq-p/147413)
+- [Unattended installation - Atlassian Documentation](https://confluence.atlassian.com/adminjiraserver071/unattended-installation-855475683.html?_ga=2.198760681.797625152.1542718714-1657682247.1524073517)
